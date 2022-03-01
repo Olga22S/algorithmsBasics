@@ -59,7 +59,7 @@ public class StringListImpl implements StringList {
 
     @Override
     public String remove(String item) {
-        int index = getItemIndex(item);
+        int index = indexOf(item);
         if (index == -1) {
             throw new AbsentItemException("This item is absent!");
         }
@@ -80,12 +80,17 @@ public class StringListImpl implements StringList {
 
     @Override
     public boolean contains(String item) {
-        return getItemIndex(item) != -1;
+        return indexOf(item) != -1;
     }
 
     @Override
     public int indexOf(String item) {
-        return getItemIndex(item);
+        for (int i = 0; i < count; i++) {
+            if (storage[i].equals(item)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @Override
@@ -138,15 +143,6 @@ public class StringListImpl implements StringList {
     @Override
     public String[] toArray() {
         return Arrays.copyOf(storage, count);
-    }
-
-    private int getItemIndex(String item) {
-        for (int i = 0; i < count; i++) {
-            if (storage[i].equals(item)) {
-                return i;
-            }
-        }
-        return -1;
     }
 
     private String[] getChangedArray(int index, String item) {
