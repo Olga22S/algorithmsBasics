@@ -11,12 +11,11 @@ import static java.util.Objects.isNull;
 
 public class StringListImpl implements StringList {
 
-    private String[] storage = new String[0];
-    private final int storageSize;
+    private String[] storage;
     private int count = 0;
 
     public StringListImpl(int storageSize) {
-        this.storageSize = storageSize;
+        this.storage = new String[storageSize];
     }
 
     @Override
@@ -24,10 +23,9 @@ public class StringListImpl implements StringList {
         if (isNull(item)) {
             throw new NullItemException("Item is null!");
         }
-        if (count == storageSize) {
+        if (count == storage.length) {
             throw new FullStorageException("Storage if full!");
         }
-        storage = Arrays.copyOf(storage, count + 1);
         storage[count++] = item;
         return item;
     }
@@ -41,7 +39,8 @@ public class StringListImpl implements StringList {
             throw new IndexOutsideException("Index outside of storage!");
         }
         count++;
-        storage = getChangedArray(index, item);
+        System.arraycopy(storage, index, storage, index + 1, count - index - 1);
+        storage[index] = item;
         return item;
     }
 
@@ -74,7 +73,7 @@ public class StringListImpl implements StringList {
         String item = storage[index];
         count--;
         System.arraycopy(storage, index + 1, storage, index, count - index);
-        storage = Arrays.copyOf(storage, count);
+        storage[count + 1] = null;
         return item;
     }
 
@@ -143,18 +142,5 @@ public class StringListImpl implements StringList {
     @Override
     public String[] toArray() {
         return Arrays.copyOf(storage, count);
-    }
-
-    private String[] getChangedArray(int index, String item) {
-        String[] array = new String[count];
-        for (int i = 0, j = 0; i < count; i++, j++) {
-            if (i == index) {
-                array[i++] = item;
-            }
-            if (i < count) {
-                array[i] = storage[j];
-            }
-        }
-        return array;
     }
 }
