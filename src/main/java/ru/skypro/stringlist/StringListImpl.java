@@ -11,8 +11,12 @@ import static java.util.Objects.isNull;
 
 public class StringListImpl implements StringList {
 
-    private String[] storage;
-    private int count = 0;
+    private final String[] storage;
+    private int size;
+
+    public StringListImpl() {
+        this.storage = new String[10];
+    }
 
     public StringListImpl(int storageSize) {
         this.storage = new String[storageSize];
@@ -20,38 +24,28 @@ public class StringListImpl implements StringList {
 
     @Override
     public String add(String item) {
-        if (isNull(item)) {
-            throw new NullItemException("Item is null!");
-        }
-        if (count == storage.length) {
+        validateItem(item);
+        if (size == storage.length) {
             throw new FullStorageException("Storage if full!");
         }
-        storage[count++] = item;
+        storage[size++] = item;
         return item;
     }
 
     @Override
     public String add(int index, String item) {
-        if (isNull(item)) {
-            throw new NullItemException("Item is null!");
-        }
-        if (index >= count || index < 0) {
-            throw new IndexOutsideException("Index outside of storage!");
-        }
-        count++;
-        System.arraycopy(storage, index, storage, index + 1, count - index - 1);
+        validateItem(item);
+        validateIndex(index);
+        size++;
+        System.arraycopy(storage, index, storage, index + 1, size - index - 1);
         storage[index] = item;
         return item;
     }
 
     @Override
     public String set(int index, String item) {
-        if (isNull(item)) {
-            throw new NullItemException("Item is null!");
-        }
-        if (index >= count || index < 0) {
-            throw new IndexOutsideException("Index outside of storage!");
-        }
+        validateItem(item);
+        validateIndex(index);
         storage[index] = item;
         return item;
     }
@@ -67,13 +61,12 @@ public class StringListImpl implements StringList {
 
     @Override
     public String remove(int index) {
-        if (index >= count || index < 0) {
-            throw new IndexOutsideException("Index outside of storage!");
-        }
+        validateIndex(index);
         String item = storage[index];
-        count--;
-        System.arraycopy(storage, index + 1, storage, index, count - index);
-        storage[count + 1] = null;
+        size--;
+        if (index != size) {
+            System.arraycopy(storage, index + 1, storage, index, size - index);
+        }
         return item;
     }
 
@@ -84,7 +77,7 @@ public class StringListImpl implements StringList {
 
     @Override
     public int indexOf(String item) {
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < size; i++) {
             if (storage[i].equals(item)) {
                 return i;
             }
@@ -94,7 +87,7 @@ public class StringListImpl implements StringList {
 
     @Override
     public int lastIndexOf(String item) {
-        for (int i = count - 1; i >= 0; i--) {
+        for (int i = size - 1; i >= 0; i--) {
             if (storage[i].equals(item)) {
                 return i;
             }
@@ -104,9 +97,7 @@ public class StringListImpl implements StringList {
 
     @Override
     public String get(int index) {
-        if (index >= count || index < 0) {
-            throw new IndexOutsideException("Index outside of storage!");
-        }
+        validateIndex(index);
         return storage[index];
     }
 
@@ -115,7 +106,10 @@ public class StringListImpl implements StringList {
         if (isNull(otherList)) {
             throw new NullItemException("Item is null!");
         }
-        for (int i = 0; i < count; i++) {
+        if (otherList.size() != size) {
+            return false;
+        }
+        for (int i = 0; i < size; i++) {
             if (!otherList.get(i).equals(storage[i])) {
                 return false;
             }
@@ -125,22 +119,35 @@ public class StringListImpl implements StringList {
 
     @Override
     public int size() {
-        return count;
+        return size;
     }
 
     @Override
     public boolean isEmpty() {
-        return count > 0;
+        return size == 0;
     }
 
     @Override
     public void clear() {
-        count = 0;
-        storage = new String[0];
+        while (--size != 0) {
+            storage[size] = null;
+        }
     }
 
     @Override
     public String[] toArray() {
-        return Arrays.copyOf(storage, count);
+        return Arrays.copyOf(storage, size);
+    }
+
+    private void validateItem(String item) {
+        if (isNull(item)) {
+            throw new NullItemException("Item is null!");
+        }
+    }
+
+    private void validateIndex(int index) {
+        if (index >= size || index < 0) {
+            throw new IndexOutsideException("Index outside of storage!");
+        }
     }
 }
